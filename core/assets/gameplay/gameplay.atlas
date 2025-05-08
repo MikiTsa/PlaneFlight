@@ -1,0 +1,76 @@
+
+gameplay.png
+size: 4096, 4096
+format: RGBA8888
+filter: Nearest, Nearest
+repeat: none
+background
+  rotate: false
+  xy: 2, 240
+  size: 2050, 2050
+  orig: 2050, 2050
+  offset: 0, 0
+  index: -1
+bird
+  rotate: false
+  xy: 2054, 2188
+  size: 55, 30
+  orig: 55, 30
+  offset: 0, 0
+  index: -1
+blank
+  rotate: false
+  xy: 119, 191
+  size: 1, 1
+  orig: 1, 1
+  offset: 0, 0
+  index: -1
+bullet
+  rotate: false
+  xy: 87, 81
+  size: 9, 40
+  orig: 9, 40
+  offset: 0, 0
+  index: -1
+cloud
+  rotate: false
+  xy: 2054, 2220
+  size: 123, 70
+  orig: 123, 70
+  offset: 0, 0
+  index: -1
+fuelcan
+  rotate: false
+  xy: 119, 194
+  size: 44, 44
+  orig: 44, 44
+  offset: 0, 0
+  index: -1
+hypnosys
+  rotate: false
+  xy: 2, 123
+  size: 115, 115
+  orig: 115, 115
+  offset: 0, 0
+  index: -1
+particle
+  rotate: false
+  xy: 2179, 2258
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
+plane
+  rotate: false
+  xy: 2, 33
+  size: 83, 88
+  orig: 83, 88
+  offset: 0, 0
+  index: -1
+powerup
+  rotate: false
+  xy: 2, 2
+  size: 30, 29
+  orig: 30, 29
+  offset: 0, 0
+  index: -1
