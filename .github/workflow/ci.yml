@@ -1,0 +1,153 @@
+name: PlaneFlight CI/CD
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:  
+
+jobs:
+  linux-build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up JDK 11
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '21'
+        cache: 'gradle'
+    
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+    
+    - name: Build with Gradle
+      run: ./gradlew build
+    
+    - name: Set up PMD
+      run: |
+        mkdir -p build/pmd
+        wget -O build/pmd/pmd-bin-6.55.0.zip https://github.com/pmd/pmd/releases/download/pmd_releases%2F6.55.0/pmd-bin-6.55.0.zip
+        unzip build/pmd/pmd-bin-6.55.0.zip -d build/pmd
+    
+    - name: Run PMD static code analysis
+      run: |
+        build/pmd/pmd-bin-6.55.0/bin/run.sh pmd -d core/src/main/java -R rulesets/java/quickstart.xml -f text > build/pmd-report.txt
+      continue-on-error: true
+    
+    - name: Create JAR distribution
+      run: ./gradlew lwjgl3:jar
+    
+    - name: Create Linux package
+      run: ./gradlew lwjgl3:construoLinuxX64
+    
+    - name: Upload JAR artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: TrajkoskiGame-JAR
+        path: lwjgl3/build/libs/TrajkoskiGame-*.jar
+    
+    - name: Upload Linux package
+      uses: actions/upload-artifact@v3
+      with:
+        name: TrajkoskiGame-Linux-Package
+        path: lwjgl3/build/construo/linuxX64/
+    
+    - name: Upload PMD report
+      uses: actions/upload-artifact@v3
+      with:
+        name: PMD-Analysis-Report
+        path: build/pmd-report.txt
+  
+  macos-build:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up JDK 11
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '11'
+        cache: 'gradle'
+    
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+    
+    - name: Build with Gradle
+      run: ./gradlew build
+    
+    - name: Create JAR distribution
+      run: ./gradlew lwjgl3:jar
+    
+    - name: Create macOS M1 package
+      run: ./gradlew lwjgl3:construoMacM1
+    
+    - name: Create macOS x64 package
+      run: ./gradlew lwjgl3:construoMacX64
+    
+    - name: Count lines of code
+      run: |
+        find . -name "*.java" | xargs wc -l > code-stats.txt
+    
+    - name: Upload macOS M1 package
+      uses: actions/upload-artifact@v3
+      with:
+        name: TrajkoskiGame-macOS-M1-Package
+        path: lwjgl3/build/construo/macM1/
+    
+    - name: Upload macOS x64 package
+      uses: actions/upload-artifact@v3
+      with:
+        name: TrajkoskiGame-macOS-x64-Package
+        path: lwjgl3/build/construo/macX64/
+    
+    - name: Upload code statistics
+      uses: actions/upload-artifact@v3
+      with:
+        name: Code-Statistics
+        path: code-stats.txt
+  
+  windows-package:
+    runs-on: self-hosted
+    needs: linux-build
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up JDK 11
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '11'
+        cache: 'gradle'
+    
+    - name: Build with Gradle
+      shell: powershell
+      run: ./gradlew.bat build
+    
+    - name: Generate Assets List
+      shell: powershell
+      run: ./gradlew.bat generateAssetList
+    
+    - name: Generate Windows package
+      shell: powershell
+      run: ./gradlew.bat lwjgl3:construoWinX64
+    
+    - name: Count files and folders
+      shell: powershell
+      run: |
+        Get-ChildItem -Path lwjgl3/build/construo/winX64/ -Recurse | Measure-Object | Select-Object -ExpandProperty Count > windows-file-count.txt
+    
+    - name: Upload Windows package
+      uses: actions/upload-artifact@v3
+      with:
+        name: TrajkoskiGame-Windows-Package
+        path: lwjgl3/build/construo/winX64/
+    
+    - name: Upload file count report
+      uses: actions/upload-artifact@v3
+      with:
+        name: Windows-File-Count
+        path: windows-file-count.txt
